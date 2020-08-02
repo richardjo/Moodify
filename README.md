@@ -3,14 +3,16 @@
 
 Welcome to Moodify, an iOS application that recommends music to its users depending on their mood and listening patterns which is gathered using the Spotify API.
 
-Moodify uses a simple algorithm to generate a playlist that matches the user's mood which are calculated using two factors: "energy" and "happiness" which are specified by the user. 
+Moodify uses a simple algorithm to generate a playlist that matches the user's mood from a pool of the user's "top songs". 
 
-Moodify c
+A user's mood is calculated using two factors: "energy" and "happiness" which are specified by the user. A user's 
+
+
 
 
 ## Installation
 
 
 <!--stackedit_data:
-eyJoaXN0b3J5IjpbLTYyNTUwNDcyXX0=
+eyJoaXN0b3J5IjpbLTM5NDM5MjEyNV19
 -->
