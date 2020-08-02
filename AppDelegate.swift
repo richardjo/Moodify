@@ -11,7 +11,7 @@ import UIKit
 
 
 @UIApplicationMain
-class AppDelegate: UIResponder, UIApplicationDelegate, UIWindowSceneDelegate {
+ class AppDelegate: UIResponder, UIApplicationDelegate, UIWindowSceneDelegate {
     
     var window: UIWindow?
     
