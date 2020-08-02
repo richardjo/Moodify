@@ -1,13 +1,14 @@
 # Moodify
 ## About
 
-Welcome to Moodify, an iOS application that recommends users music depending on their mood and listening patterns! 
+Welcome to Moodify, an iOS application that recommends music to its users depending on their mood and listening patterns! 
+
+Moodify uses a simple algorithm to generate a playlist that matches the user's mood, which isby their "energy" and whether they are "happy" or "sad". 
 
 
-## Algorithm
 ## Installation
 
 
 <!--stackedit_data:
-eyJoaXN0b3J5IjpbLTQ3NDAzNTQ5NV19
+eyJoaXN0b3J5IjpbLTMwOTA4NzcwN119
 -->
