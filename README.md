@@ -7,7 +7,9 @@ Moodify uses a simple algorithm to generate playlists matching a user's mood: pl
 
 ## Installation
 
+This project uses CocoaPods for dependency management.
 
+[Alamofire](https://github.com/Alamofire/Alamofire) and [Swift](https://github.com/SwiftyJSON/SwiftyJSON)
 <!--stackedit_data:
-eyJoaXN0b3J5IjpbLTE3NzMwNzQ4MzMsMTA0NzUxOTY4NF19
+eyJoaXN0b3J5IjpbLTExNTQ1OTMxMTAsMTA0NzUxOTY4NF19
 -->
