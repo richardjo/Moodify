@@ -23,6 +23,8 @@ class User {
     var topArtistsIDs = [String]()
     //Stores user's top songs (and associated metadata, e.g. the ID, artists, etc)
     var topSongs = [Track]()
+    //Stores user's top song IDs
+    var topSongsIDs = Set<String>()
     //Stores user's top songs properties (e.g. tempo, key, energy, danceability, etc)
     var topSongsProperties = [String:[String:Any]]()
     
@@ -32,7 +34,7 @@ class User {
             if let trackProperties = self.topSongsProperties[track.ID] {
                 let trackEnergy = trackProperties["energy"] as! Float
                 let trackDanceability = trackProperties["danceability"] as! Float
-                if abs(trackEnergy - energy) < 0.15 || abs(trackDanceability - danceability) < 0.20 {
+                if abs(trackEnergy - energy) < 0.30 && abs(trackDanceability - danceability) < 0.30 {
                     return true
                 }
             }
@@ -51,11 +53,7 @@ class User {
             semaphore.wait()
             self.retrieveTopSongs(completion: { semaphore.signal() })
             semaphore.wait()
-            self.retrieveTopSongsProperties(completion: { semaphore.signal() })
-            semaphore.wait()
             self.retrieveTopArtistsSongs(completion: { semaphore.signal() })
-            semaphore.wait()
-            self.retrieveTopSongsProperties(completion: { semaphore.signal() })
             semaphore.wait()
             self.retrieveRecommendedSongs(completion: { semaphore.signal() }, danceability: danceability, energy: energy)
             semaphore.wait()
@@ -97,6 +95,11 @@ class User {
                 //Parses response JSON and stores top songs (and associated song metadata)
                 let topSongsJSON = JSON(value)
                 self.topSongs = self.parseTopSongsJSON(data: topSongsJSON)
+                self.topSongs = self.topSongs.filter { (track) -> Bool in
+                    let isIncluded = !self.topSongsIDs.contains(track.ID)
+                    if isIncluded { self.topSongsIDs.insert(track.ID) }
+                    return isIncluded
+                }
                 completion()
             case .failure:
                 completion()
@@ -121,7 +124,9 @@ class User {
                     var artistsTopSongs = self.parseArtistsTopSongsJSON(data: artistsTopSongsJSON)
                     //Ensures that there are no duplicates with the user's top 50 songs
                     artistsTopSongs = artistsTopSongs.filter { (track) -> Bool in
-                        self.topSongsProperties[track.ID] == nil
+                        let isIncluded = !self.topSongsIDs.contains(track.ID)
+                        if isIncluded { self.topSongsIDs.insert(track.ID) }
+                        return isIncluded
                     }
                     self.topSongs += artistsTopSongs
                     dispatchGroup.leave()
@@ -167,8 +172,8 @@ class User {
      */
     private func retrieveRecommendedSongs(completion: @escaping ()->(), danceability: Float, energy: Float) {
         let headers:HTTPHeaders = [.authorization(bearerToken: accessToken)]
-        let topArtistSeeds = getTopArtistsSeeds()
-        let parameters:[String:Any] = ["limit":"100", "min_energy": energy - 0.05, "max_energy": energy + 0.05, "min_danceability": danceability - 0.075, "max_danceability": danceability + 0.075, "seed_artists": topArtistSeeds]
+        let topArtistSeeds = getTopArtistsSeeds()[0]
+        let parameters:[String:Any] = ["limit":"100", "min_energy": String(energy - 0.10), "max_energy": String(energy + 0.10), "min_danceability": String(danceability - 0.10), "max_danceability": String(danceability + 0.10), "seed_artists": topArtistSeeds]
         AF.request("https://api.spotify.com/v1/recommendations", method: .get, parameters: parameters, encoding: URLEncoding.default, headers: headers).responseJSON { (response) in
             switch response.result {
             case .success(let value):
@@ -177,7 +182,9 @@ class User {
                 var recommendedSongs = self.parseRecommendedSongsJSON(data: recommendedSongsJSON)
                 //Ensures that there are no duplicates with the user's top 50 songs
                 recommendedSongs = recommendedSongs.filter { (track) -> Bool in
-                    self.topSongsProperties[track.ID] == nil
+                    let isIncluded = !self.topSongsIDs.contains(track.ID)
+                    if isIncluded { self.topSongsIDs.insert(track.ID) }
+                    return isIncluded
                 }
                 self.topSongs += recommendedSongs
                 completion()
@@ -190,11 +197,11 @@ class User {
     
     private func getTopArtistsSeeds() -> [String] {
         var topArtistsSeeds = [String]()
-        for _ in 1...2 {
+        for _ in 1...5 {
             let randomIndex = Int.random(in: 0..<topArtistsIDs.count)
             topArtistsSeeds.append(topArtistsIDs[randomIndex])
         }
-        topArtistsSeeds.append(contentsOf: topArtistsIDs[0..<max(2, topArtistsIDs.count)])
+        
         return topArtistsSeeds
     }
     
