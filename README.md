@@ -7,7 +7,7 @@ Moodify uses a simple algorithm to generate playlists matching a user's mood: pl
 
 However, this algorithm has its limitations. Because the algorithm draws its suggestions from the user's listening history, it's limited by the songs the user has previously listened to. 
 
-## Images
+## Demo
 
 <iframe src="https://drive.google.com/file/d/16yqS3lWhhShneqrB63kP2i9ZSDKt66rF/preview" width="640" height="480"></iframe>
 
@@ -17,6 +17,6 @@ This project uses [CocoaPods](https://github.com/CocoaPods/CocoaPods) for depend
 
 [Alamofire](https://github.com/Alamofire/Alamofire) is used for network requests to the Spotify API. [SwiftyJSON](https://github.com/SwiftyJSON/SwiftyJSON) is used to parse JSON responses from the Spotify API.
 <!--stackedit_data:
-eyJoaXN0b3J5IjpbMTc4NTg5MDc2MywtNjI2NTAxMDYyLC0xNz
+eyJoaXN0b3J5IjpbLTYyMDMwNDY0MCwtNjI2NTAxMDYyLC0xNz
 cyMjEyNjc5LC0xMzQxOTI4NjY3LDEwNDc1MTk2ODRdfQ==
 -->
