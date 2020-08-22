@@ -26,6 +26,10 @@ class MoodSelectorViewController: UIViewController {
         setupDataDidLoadNotification()
     }
     
+    deinit {
+        NotificationCenter.default.removeObserver("userDataDidLoadNotification")
+    }
+    
     override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
         moodSelectionGradientLayer.frame = moodSelectionView.bounds
@@ -88,6 +92,10 @@ class MoodSelectorViewController: UIViewController {
         moodSelectorView.isUserInteractionEnabled = true
     }
     
+    func setupNextButton(){
+        nextButton.layer.cornerRadius = 21
+    }
+    
     @objc func moodSelectorViewDidDrag(_ sender:UIPanGestureRecognizer) {
         view.bringSubviewToFront(moodSelectorView)
         let translation = sender.translation(in: moodSelectionView)
@@ -95,10 +103,6 @@ class MoodSelectorViewController: UIViewController {
         //Ensures selector doesn't go out of bounds of the selection view
         if moodSelectionView.bounds.contains(destination) { moodSelectorView.center = destination }
         sender.setTranslation(CGPoint(x: 0, y: 0), in: view)
-    }
-    
-    func setupNextButton(){
-        nextButton.layer.cornerRadius = 21
     }
     
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {

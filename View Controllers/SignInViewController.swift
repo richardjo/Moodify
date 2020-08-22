@@ -13,8 +13,7 @@ class SignInViewController: UIViewController, SPTSessionManagerDelegate {
     var accessToken:String?
     var user:User!
     
-    //MARK: - Configuration
-    
+    //MARK: - Spotify API Configuration Methods
     lazy var configuration:SPTConfiguration = {
         let configuration = SPTConfiguration(clientID: Constants.SpotifyClientID, redirectURL: Constants.SpotifyRedirectURL)
         return configuration
@@ -24,7 +23,7 @@ class SignInViewController: UIViewController, SPTSessionManagerDelegate {
         return SPTSessionManager(configuration: configuration, delegate: self)
     }()
     
-    //MARK: - Session Manager Delegate Methods
+    //MARK: - Spotify API Session Manager Delegate Methods
     
     func sessionManager(manager: SPTSessionManager, didInitiate session: SPTSession) {
         user = User(accessToken: session.accessToken)
@@ -36,8 +35,6 @@ class SignInViewController: UIViewController, SPTSessionManagerDelegate {
     func sessionManager(manager: SPTSessionManager, didFailWith error: Error) {
         //
     }
-    
-
     //MARK: - Sign In View Controller Logic
 
     var moodifyLabel: UILabel!

@@ -34,13 +34,18 @@ class SuggestionsViewController: UIViewController, UITableViewDelegate, UITableV
         return matchingSongs.count
     }
     
+    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        performSegue(withIdentifier: "songInformationSegue", sender: indexPath)
+    }
+    
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "suggestionTableViewCell")!
         
         if let suggestionTableViewCell = cell as? SuggestionTableViewCell {
-            let album = matchingSongs[indexPath.row].album
-            let artist = matchingSongs[indexPath.row].artists
-            let songTitle = matchingSongs[indexPath.row].name
+            let track = matchingSongs[indexPath.row]
+            let album = track.album
+            let artist = track.artists
+            let songTitle = track.name
             suggestionTableViewCell.albumLabel.text = album
             suggestionTableViewCell.artistLabel.text = artist[0].name
             suggestionTableViewCell.songTitleLabel.text = songTitle
@@ -48,4 +53,11 @@ class SuggestionsViewController: UIViewController, UITableViewDelegate, UITableV
         return cell
     }
 
+    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+        if let destination = segue.destination as? SongInformationViewController {
+            if let indexPath = sender as? IndexPath {
+                destination.track = matchingSongs[indexPath.row]
+            }
+        }
+    }
 }

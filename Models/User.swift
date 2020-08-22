@@ -12,11 +12,10 @@ import SwiftyJSON
 
 /* User
     - Manages user's auth. credentials (OAuth Token).
-    - Retrieves, parses and stores user's artist/track data asynchronously using Spotify API network calls.
-    - Computes and returns user's top songs/tracks using a simple algorithm.
+    - Retrieves, parses and stores user's artist/track data asynchronously using network calls to Spotify's API.
+    - Computes and returns user's top songs/tracks using a simple song-suggestion algorithm.
  */
 class User {
-    
     //Stores user's authentication token
     let accessToken:String!
     //Stores user's top artists
@@ -45,7 +44,7 @@ class User {
     
     //Retrieves user data
     func retrieveUserData(danceability:Float, energy:Float) {
-        //Uses semaphore to manage storage for shared user data resources (i.e. for shared top songs array) and ensures data retrieval occurs in-order.\
+        //Semaphore manages access for shared user data resources (i.e. for shared top songs array) and ensures data retrieval occurs sequentially.
         let semaphore = DispatchSemaphore(value: 0)
         let dispatchQueue = DispatchQueue.global(qos: .utility)
         dispatchQueue.async {
@@ -166,13 +165,13 @@ class User {
     /* Retriees user's recommended songs
         - Calculates recommendations by user provided energy and danceability song values
         - Generates 100 recommended songs by using a combination of:
-            - A random selection of 2 of the user's top artists
+            - A random selection of the user's top artists
             - User's top 3 artists
           as seeds.
      */
     private func retrieveRecommendedSongs(completion: @escaping ()->(), danceability: Float, energy: Float) {
         let headers:HTTPHeaders = [.authorization(bearerToken: accessToken)]
-        let topArtistSeeds = getTopArtistsSeeds()[0]
+        let topArtistSeeds = getTopArtistsSeeds()
         let parameters:[String:Any] = ["limit":"100", "min_energy": String(energy - 0.10), "max_energy": String(energy + 0.10), "min_danceability": String(danceability - 0.10), "max_danceability": String(danceability + 0.10), "seed_artists": topArtistSeeds]
         AF.request("https://api.spotify.com/v1/recommendations", method: .get, parameters: parameters, encoding: URLEncoding.default, headers: headers).responseJSON { (response) in
             switch response.result {
@@ -195,14 +194,9 @@ class User {
         }
     }
     
-    private func getTopArtistsSeeds() -> [String] {
-        var topArtistsSeeds = [String]()
-        for _ in 1...5 {
-            let randomIndex = Int.random(in: 0..<topArtistsIDs.count)
-            topArtistsSeeds.append(topArtistsIDs[randomIndex])
-        }
-        
-        return topArtistsSeeds
+    private func getTopArtistsSeeds() -> String {
+        let randomIndex = Int.random(in: 0..<topArtistsIDs.count)
+        return topArtistsIDs[randomIndex]
     }
     
     private func parseTopArtistsJSON(data: JSON) -> [String] {
@@ -212,42 +206,37 @@ class User {
         }
         return topArtistsIDs
     }
-
     
     private func parseTopSongsJSON(data: JSON) -> [Track] {
-        let topSongsJSON = data["items"].arrayValue
-        let topSongs: [Track] = topSongsJSON.map { (data) -> Track in
-            let name = data["name"].stringValue
-            let URI = data["uri"].stringValue
-            let ID = data["id"].stringValue
-            let album = data["album"].stringValue
-            let artists:[Artist] = data["artists"].map { (_, data) -> Artist in
-                let name = data["name"].stringValue
-                let ID = data["id"].stringValue
-                let URI = data["uri"].stringValue
-                return Artist(name: name, URI: URI, ID: ID)
-            }
-            return Track(name: name, URI: URI, ID: ID, album: album, artists: artists)
-        }
-        return topSongs
+        return parseSongsInformationJSON(data: data, key: "items")
     }
-    
+       
     private func parseArtistsTopSongsJSON(data: JSON) -> [Track] {
-        let artistsTopSongsJSON = data["tracks"].arrayValue
-        let artistsTopSongs: [Track] = artistsTopSongsJSON.map { (data) -> Track in
+        return parseSongsInformationJSON(data: data, key: "tracks")
+    }
+       
+    private func parseRecommendedSongsJSON(data: JSON) -> [Track] {
+        return parseSongsInformationJSON(data: data, key: "tracks")
+    }
+
+    private func parseSongsInformationJSON(data: JSON, key: String) -> [Track] {
+        let songsJSON = data[key].arrayValue
+        let songs: [Track] = songsJSON.map { (data) -> Track in
             let name = data["name"].stringValue
             let URI = data["uri"].stringValue
             let ID = data["id"].stringValue
-            let album = data["album"].stringValue
+            let album = data["album"]["name"].stringValue
+            let albumImageURL = data["album"]["images"][0]["url"].stringValue
+            let previewURL = data["preview_url"].stringValue
             let artists:[Artist] = data["artists"].map { (_, data) -> Artist in
                 let name = data["name"].stringValue
                 let ID = data["id"].stringValue
                 let URI = data["uri"].stringValue
                 return Artist(name: name, URI: URI, ID: ID)
             }
-            return Track(name: name, URI: URI, ID: ID, album: album, artists: artists)
+            return Track(name: name, URI: URI, ID: ID, album: album, artists: artists, previewURL: previewURL, albumImageURL: albumImageURL)
         }
-        return artistsTopSongs
+        return songs
     }
     
     private func parseSongPropertiesJSON(data: JSON) -> [String: Any] {
@@ -259,45 +248,7 @@ class User {
         return songProperties
     }
     
-    private func parseRecommendedSongsJSON(data: JSON) -> [Track] {
-        let recommendedSongsJSON = data["tracks"].arrayValue
-        let recommendedSongs: [Track] = recommendedSongsJSON.map { (data) -> Track in
-            let name = data["name"].stringValue
-            let URI = data["uri"].stringValue
-            let ID = data["id"].stringValue
-            let album = data["album"].stringValue
-            let artists:[Artist] = data["artists"].map { (_, data) -> Artist in
-                let name = data["name"].stringValue
-                let ID = data["id"].stringValue
-                let URI = data["uri"].stringValue
-                return Artist(name: name, URI: URI, ID: ID)
-            }
-            return Track(name: name, URI: URI, ID: ID, album: album, artists: artists)
-        }
-        return recommendedSongs
-    }
-    
     init(accessToken:String){
         self.accessToken = accessToken
     }
-}
-
-/* Track
-    - Stores individual track information
- */
-struct Track {
-    var name = String()
-    var URI = String()
-    var ID = String()
-    var album = String()
-    var artists = [Artist]()
-}
-
-/* Artist
-   - Stores individual artist information
-*/
-struct Artist {
-    var name = String()
-    var URI = String()
-    var ID = String()
 }
