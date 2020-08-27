@@ -8,7 +8,7 @@ Moodify uses a simple algorithm to generate playlists matching a user's mood: pl
 However, this algorithm has its limitations. Because the algorithm draws its suggestions from the user's listening history, it's limited by the songs the user has previously listened to. 
 
 ## Demo
-<iframe src="https://drive.google.com/file/d/16yqS3lWhhShneqrB63kP2i9ZSDKt66rF/preview" width="640" height="480"></iframe>
+"https://drive.google.com/file/d/16yqS3lWhhShneqrB63kP2i9ZSDKt66rF/preview"
 
 ## Installation
 
